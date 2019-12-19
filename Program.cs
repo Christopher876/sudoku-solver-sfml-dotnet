@@ -7,8 +7,11 @@ namespace sudoku_solver
     {
         static void Main(string[] args)
         {
-            Screen screen = new Screen(810,603,"Sudoku Solver",Styles.Close);            
-            screen.Loop();
+            Sudoku sudoku = new Sudoku();
+            //Screen screen = new Screen(810,603,"Sudoku Solver",Styles.Close);            
+            //screen.Game(sudoku.GetBoard,sudoku);
+            var board = sudoku.GetBoard;
+            sudoku.FindBlanks();
         }
     }
 }

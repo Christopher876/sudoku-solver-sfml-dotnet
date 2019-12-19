@@ -4,6 +4,8 @@ using SFML.Graphics;
 using SFML.Window;
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace sudoku_solver
 {
@@ -15,22 +17,6 @@ namespace sudoku_solver
         private Font sourceCodeFont;
         private readonly uint fontSize; 
 
-        private Text text=new Text(){
-            DisplayedString = "1",
-            FillColor = Color.Red,
-            Style = Text.Styles.Bold,
-            CharacterSize = 45,
-            Position = new Vector2f(30,0),
-            Font = new Font("./SourceCodeVariable-Roman.ttf"),            
-        };
-        private Text text2=new Text(){
-            DisplayedString = "2",
-            FillColor = Color.Blue,
-            Style = Text.Styles.Bold,
-            CharacterSize = 45,
-            Position = new Vector2f(120+90+90+90,67), //120
-            Font = new Font("./SourceCodeVariable-Roman.ttf"),            
-        };
         public Screen(uint width,uint height,string title,Styles styles){
             this.videoMode = new VideoMode();
             this.videoMode.Width = width;
@@ -44,31 +30,12 @@ namespace sudoku_solver
             this.window.KeyPressed += Window_KeyPressed;
             //Setup Window Events
             this.window.Closed += (sender,e) => {(this.window).Close();};
-            text.CharacterSize = fontSize;
-            text2.CharacterSize = fontSize;
-            text2.Position = new Vector2f(30+(90*5),(window.Size.Y/9)*3);
         }
 
         private void Window_KeyPressed(object sender, KeyEventArgs e)
         {
             if(e.Code == Keyboard.Key.Escape)
-                this.window.Close();
-            if(e.Code == Keyboard.Key.Up){
-                text2.Position = new Vector2f(text2.Position.X,text2.Position.Y+1);
-                Console.WriteLine(text2.Position);
-            }
-            if(e.Code == Keyboard.Key.Down){
-                text2.Position = new Vector2f(text2.Position.X,text2.Position.Y-1);
-                Console.WriteLine(text2.Position);
-            }
-            if(e.Code == Keyboard.Key.Right){
-                text2.Position = new Vector2f(text2.Position.X+1,text2.Position.Y);
-                Console.WriteLine(text2.Position);
-            }
-            if(e.Code == Keyboard.Key.Down){
-                text2.Position = new Vector2f(text2.Position.X-1,text2.Position.Y);
-                Console.WriteLine(text2.Position);
-            }
+                window.Close();
         }
 
         private List<RectangleShape> DrawGrid(int size = 50){
@@ -79,9 +46,6 @@ namespace sudoku_solver
 
             for(int y = 0; y < window.Size.Y/50;y++){
                 for(int x = 0; x < window.Size.X/50; x++){
-                    float thickness = 2f;
-                    if(x % 3 == 0)
-                        thickness = 4f;
                     rectangles.Add(new RectangleShape(new Vector2f(rectSizeX,rectSizeY)){
                         Position = new Vector2f(rectSizeX*x,rectSizeY*y),
                         OutlineColor = Color.Black,
@@ -92,13 +56,13 @@ namespace sudoku_solver
             return rectangles;
         }
 
-        private List<Text> DrawText(){
-            Random random = new Random();
+        private List<Text> DrawText(List<List<int>> board = null){
             List<Text> numbers = new List<Text>();
             for(int y = 0; y < 9;y++){
+                var row = board[y];
                 for(int x = 0; x < 9; x++){
                     numbers.Add(new Text(){
-                        DisplayedString = (random.Next(0,10)).ToString(),
+                        DisplayedString = row[x].Equals(0) ? "":row[x].ToString(),
                         FillColor = Color.Red,
                         Style = Text.Styles.Bold,
                         CharacterSize = 45,
@@ -133,12 +97,17 @@ namespace sudoku_solver
             return lines;
         }
 
-        public void Loop(){
+        public async void Game(List<List<int>> board,Sudoku sudoku){
+            List<List<int>> solve_board = board;
             List<RectangleShape> rectangles = DrawGrid();
             List<RectangleShape> lines = DrawSeparationLines();
-            List<Text> numbers = DrawText();
-            while(this.window.IsOpen){                
-                this.window.DispatchEvents();
+            List<Text> numbers = DrawText(board);
+            
+            while(window.IsOpen){                
+                window.DispatchEvents();
+                //solve_board = await sudoku.BackTrackingAlgothrim(solve_board); 
+                
+                numbers = DrawText(solve_board);
                 for(int i = 0; i < rectangles.Count;i++){
                     window.Draw(rectangles[i]);
                 }
@@ -148,9 +117,7 @@ namespace sudoku_solver
                 for(int i = 0; i < numbers.Count;i++){
                     window.Draw(numbers[i]);
                 }
-                //window.Draw(text);
-                //window.Draw(text2);
-                this.window.Display();
+                window.Display();
             }
         }   
     }
