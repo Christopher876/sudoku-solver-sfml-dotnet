@@ -7,7 +7,7 @@ namespace sudoku_solver
     {
         static void Main(string[] args)
         {
-            Screen screen = new Screen(800,600,"Sudoku Solver");            
+            Screen screen = new Screen(900,603,"Sudoku Solver",Styles.Close);            
             screen.Loop();
         }
     }
