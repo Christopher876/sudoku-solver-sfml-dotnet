@@ -97,17 +97,14 @@ namespace sudoku_solver
             return lines;
         }
 
-        public async void Game(List<List<int>> board,Sudoku sudoku){
-            List<List<int>> solve_board = board;
+        public async void Game(){
             List<RectangleShape> rectangles = DrawGrid();
             List<RectangleShape> lines = DrawSeparationLines();
-            List<Text> numbers = DrawText(board);
-            
+            List<Text> numbers = DrawText(Sudoku.Board);
+
             while(window.IsOpen){                
-                window.DispatchEvents();
-                //solve_board = await sudoku.BackTrackingAlgothrim(solve_board); 
-                
-                numbers = DrawText(solve_board);
+                window.DispatchEvents();                
+                numbers = DrawText(Sudoku.Board);
                 for(int i = 0; i < rectangles.Count;i++){
                     window.Draw(rectangles[i]);
                 }
