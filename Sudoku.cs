@@ -8,24 +8,12 @@ using System.Threading;
 
 namespace sudoku_solver
 {
-    static class Extensions
-    {
-        public static IList<T> Clone<T>(this IList<T> listToClone) where T: ICloneable
-        {
-                return listToClone.Select(item => (T)item.Clone()).ToList();
-        }
-    }
     public class Sudoku
     {
-        private int workingNumberBoard = 0;
-        private int workingSpaceRow = 0;
-        private int workingSpaceColumn = 0;
-        private int recursiveLevel = 0;
-        private int numberOfBlanks = 0;
-        private int solvedBlanks = 0;
+        private const int SIZE = 9;
+        #pragma warning disable CS0414
         private static List<List<int>> board;
         private List<List<int>> cells = new List<List<int>>();
-        private List<List<BoardNumber>> blanks = new List<List<BoardNumber>>();
         private List<List<int>> ParseBoard(){
             List<List<int>> boardNumbers = new List<List<int>>();
             using (StreamReader streamReader = new StreamReader(@"board.json")){
@@ -62,24 +50,7 @@ namespace sudoku_solver
 
         public Sudoku(){
             GetBoard();
-            FindBlanks();
             FindCells(); 
-        }
-
-        //Get and set the locations of what to solve
-        private void FindBlanks(){
-            int j = 0;
-            foreach(var b in board){
-                var temp = new List<BoardNumber>();
-                for(int i = 0; i<b.Count;i++){
-                    if(b[i] == 0){
-                        temp.Add(new BoardNumber(b[i],new Tuple<int, int>(j,i)));
-                        numberOfBlanks++;
-                    }
-                }
-                this.blanks.Add(new List<BoardNumber>(temp));
-                j++;
-            }
         }
 
         private void FindCells(){
@@ -107,11 +78,34 @@ namespace sudoku_solver
             }
         }
 
-        //Check for the same number in column and row
-        public bool CheckForSameNumber(int num,int row, int column){
-            int temp = Board[row][column];
-            Board[row][column] = 0;
+        //Find one blank spot at a time
+        private List<int> FindUnassigned(int row, int col)
+        {
+            int numunassign = 0;
+            //Search within our rows
+            for(int i=0;i<SIZE;i++)
+            {
+                //Search within our columns
+                for(int j=0;j<SIZE;j++)
+                {
+                    //cell is unassigned
+                    if(Board[i][j] == 0)
+                    {
+                        //there is one or more unassigned cells
+                        numunassign = 1;
+                        List<int> unassigned = new List<int>(){numunassign, i, j};
+                        return unassigned;
+                    }
+                }
+            }
+            //If there are no zeroes found from the loop then we are done
+            List<int> noUnassigned = new List<int>(){numunassign, -1, -1};
+            return noUnassigned;
+        }
 
+        //Check for the same number in column and row and matrix
+        private bool CheckForSameNumber(int num,int row, int column){
+            //Console.WriteLine($"row={row},column={column},value={num}");
             bool rowCheck = Board[row].All(x => x != num); //Check if selected number is equal to anything in row
             bool columnCheck;
             bool boxCheck = false;
@@ -163,50 +157,40 @@ namespace sudoku_solver
                         boxCheck = true;
                     break;
             }
-            Board[row][column] = temp;
             return rowCheck && columnCheck && boxCheck;
         }
-
-        /*private void SetBoardBlanks(){
-            for(int i = 0; i < board.Count;i++){
-                for(int j = 0; j < blanks[i].Count;j++){
-                    board[blanks[i][j].location.Item1][blanks[i][j].location.Item2] = blanks[i][j].Number; 
-                }
-            }
-        }*/
-
-        private bool IncrementNumber(int row, int column){
-            if(CheckForSameNumber(++Board[row][column],row,column)){
+        public bool BackTrackingAlgorithm(){
+            int row=0;
+            int col=0;
+            List<int> unassigned = FindUnassigned(row, col);
+            //if all cells are assigned then the sudoku is already solved
+            if(unassigned[0] == 0)
                 return true;
-            }
-            return false;       
-        }
-
-        public void BackTrackingAlgorithm(){
-            int i = 0;
-            while(true){
-                try{
-                    for(int j = 0; j < blanks[i].Count;j++){
-                        Thread.Sleep(250);
-                        for(int k = 0; k < 20;k++){
-                            if(IncrementNumber(blanks[i][j].location.Item1,blanks[i][j].location.Item2)){
-                                break;
-                            }
-                        }
-                    }
-                    i++;
+            
+            //number between 1 to 9
+            row = unassigned[1]; //Get the row of the unassigned
+            col = unassigned[2]; //Get the column of the unassigned
+            
+            //Assign between numbers 1 and 9 to find a correct number
+            //When an answer is false then the program goes back up and keeps on incrementing i until it hits 9.
+            //If it hits 9 then it exits the loop and then returns false.
+            //It does this until it back tracks to a value that it can increment and keep, then it calls itself to get the next value
+            for(int i=1;i<=SIZE;i++)
+            {
+                Thread.Sleep(25);
+                if(CheckForSameNumber(i, row, col))
+                {
                     FindCells();
-                    if(i >= 45)
-                        break;
-
-                //This is when we are done
-                }catch (ArgumentOutOfRangeException){
-                    Console.WriteLine("We are done!");
-                    break;
-                }finally{
-                    
+                    Board[row][col] = i;
+                    if(BackTrackingAlgorithm())
+                        return true;
+                    //if we can't proceed with this solution
+                    //reassign the cell to 0
+                    Board[row][col]=0; //Recursive, if one recursive loop is false, then all before that can't increment to another value becomes false
+                    FindCells();
                 }
             }
+        return false;
         }
-    }
+    }   
 }
