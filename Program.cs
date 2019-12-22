@@ -16,7 +16,7 @@ namespace sudoku_solver
 {
     class Program
     {
-        public static Thread sudokuGame;
+        public static Thread sudokuGame{get; private set;}
         static void Main(string[] args)
         {
             Options options = new Options();
@@ -29,12 +29,13 @@ namespace sudoku_solver
                     options.speed = opt.speed;
                 });
 
+            //Setup Sudoku Instance and Thread
             Sudoku sudoku = new Sudoku(options.speed,options.difficulty);
-            Screen screen = new Screen(810,603,"Sudoku Solver",Styles.Close);            
-            Thread game = new Thread(screen.Game);
             sudokuGame = new Thread(() => sudoku.BackTrackingAlgorithm());
             
-            game.Start();                      
+            //Setup Screen and Start on Main Thread
+            Screen screen = new Screen(810,603,"Sudoku Solver",Styles.Close);            
+            screen.Game();
         }
     }
 }
