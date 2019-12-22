@@ -19,7 +19,7 @@ namespace sudoku_solver
             this.videoMode.Height = height;
             this.title = title;
             this.window = new RenderWindow(videoMode,this.title,styles);
-            this.sourceCodeFont = new Font("./SourceCodeVariable-Roman.ttf");
+            this.sourceCodeFont = new Font(@"SourceCodeVariable-Roman.ttf");
             this.fontSize = (uint)(window.Size.X/9/2);
 
             //Setup key events
@@ -80,7 +80,7 @@ namespace sudoku_solver
                         Style = Text.Styles.Bold,
                         CharacterSize = 45,
                         Position = new Vector2f(30+(90*x),(window.Size.Y/9)*y+5),
-                        Font = new Font("./SourceCodeVariable-Roman.ttf"),            
+                        Font = sourceCodeFont,            
                 });
                 }
             }
