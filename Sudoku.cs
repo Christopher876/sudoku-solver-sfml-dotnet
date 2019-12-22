@@ -1,19 +1,68 @@
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.IO;
-using System;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Net.Http;
+using System.Net;
+using System;
 
 namespace sudoku_solver
 {
     public class Sudoku
     {
+        #region Variables
+        private int SPEED = 1; //speed of how fast it will be solving
+        private bool DELAY = false;
+        public static bool isSolving = false;
         private const int SIZE = 9;
         #pragma warning disable CS0414
         private static List<List<int>> board;
         private List<List<int>> cells = new List<List<int>>();
+        #endregion
+
+        public Sudoku(int speed = 0, string difficulty = ""){
+            DELAY = speed.Equals(0) ? false:true; //No delay if speed is 0
+            SPEED = speed;
+
+            if(difficulty != String.Empty && difficulty != null){
+                GetBoard(difficulty);
+            }else{
+                GetBoard();
+            }
+            FindCells();
+        }
+        private List<List<int>> ParseWebBoard(JObject webBoard){
+            List<List<int>> boardNumbers = new List<List<int>>();
+            for(int i = 0; i<webBoard["board"].Count();i++){
+                List<int> tempList = new List<int>();
+                var temp = webBoard["board"][i].ToList();
+                foreach(var number in temp){
+                    tempList.Add((int)number);
+                }
+                boardNumbers.Add(tempList);                
+            }
+            
+            board = boardNumbers;
+            return boardNumbers;
+        }
+
+        //Get a Sudoku Board from public api
+        public List<List<int>> GetBoard(string difficulty){
+            string url = $"https://sugoku.herokuapp.com/board?difficulty={difficulty}";
+            string html = ""; //sudoku board from internet
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.AutomaticDecompression = DecompressionMethods.GZip;
+
+            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+            using (Stream stream = response.GetResponseStream())
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                html = reader.ReadToEnd();             
+            }
+            return ParseWebBoard(JObject.Parse(html));
+        } 
         private List<List<int>> ParseBoard(){
             List<List<int>> boardNumbers = new List<List<int>>();
             using (StreamReader streamReader = new StreamReader(@"board.json")){
@@ -48,10 +97,6 @@ namespace sudoku_solver
             return ParseBoard();
         }
 
-        public Sudoku(){
-            GetBoard();
-            FindCells(); 
-        }
 
         private void FindCells(){
             int x = 0;
@@ -177,7 +222,8 @@ namespace sudoku_solver
             //It does this until it back tracks to a value that it can increment and keep, then it calls itself to get the next value
             for(int i=1;i<=SIZE;i++)
             {
-                Thread.Sleep(25);
+                if(DELAY)
+                    Thread.Sleep(SPEED);
                 if(CheckForSameNumber(i, row, col))
                 {
                     FindCells();

@@ -73,3 +73,4 @@
 /home/christopherwilliams/Development/sudoku_solver/obj/Debug/netcoreapp3.1/sudoku_solver.dll
 /home/christopherwilliams/Development/sudoku_solver/obj/Debug/netcoreapp3.1/sudoku_solver.pdb
 /home/christopherwilliams/Development/sudoku_solver/bin/Debug/netcoreapp3.1/Newtonsoft.Json.dll
+/home/christopherwilliams/Development/sudoku_solver/bin/Debug/netcoreapp3.1/CommandLine.dll

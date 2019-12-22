@@ -1,11 +1,8 @@
-using SFML;
 using SFML.System;
 using SFML.Graphics;
 using SFML.Window;
-using System;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+using System;
 
 namespace sudoku_solver
 {
@@ -15,8 +12,7 @@ namespace sudoku_solver
         private VideoMode videoMode;
         private RenderWindow window;
         private Font sourceCodeFont;
-        private readonly uint fontSize; 
-
+        private readonly uint fontSize;
         public Screen(uint width,uint height,string title,Styles styles){
             this.videoMode = new VideoMode();
             this.videoMode.Width = width;
@@ -29,13 +25,30 @@ namespace sudoku_solver
             //Setup key events
             this.window.KeyPressed += Window_KeyPressed;
             //Setup Window Events
-            this.window.Closed += (sender,e) => {(this.window).Close();};
+            this.window.Closed += (sender,e) => {
+                (this.window).Close();
+                Environment.Exit(Environment.ExitCode);
+            };
         }
 
         private void Window_KeyPressed(object sender, KeyEventArgs e)
         {
-            if(e.Code == Keyboard.Key.Escape)
-                window.Close();
+            switch(e.Code){
+                case Keyboard.Key.Escape:
+                    window.Close();
+                    break;
+                //Start SOlving
+                case Keyboard.Key.Space:
+                    if(!Sudoku.isSolving){
+                        Program.sudokuGame.Start();
+                        Sudoku.isSolving = true;
+                    }
+                    break;
+                //Restart
+                case Keyboard.Key.R:
+                    break;
+            }            
+            
         }
 
         private List<RectangleShape> DrawGrid(int size = 50){
@@ -97,7 +110,7 @@ namespace sudoku_solver
             return lines;
         }
 
-        public async void Game(){
+        public void Game(){
             List<RectangleShape> rectangles = DrawGrid();
             List<RectangleShape> lines = DrawSeparationLines();
             List<Text> numbers = DrawText(Sudoku.Board);
