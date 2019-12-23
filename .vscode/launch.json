@@ -13,7 +13,7 @@
             "program": "${workspaceFolder}/bin/Debug/netcoreapp3.1/sudoku_solver.dll",
             "args": [
                 //"--speed","1",
-                "--new","medium",
+                "--new","easy",
             ],
             "cwd": "${workspaceFolder}",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console

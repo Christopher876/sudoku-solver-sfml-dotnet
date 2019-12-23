@@ -19,6 +19,18 @@ namespace sudoku_solver
         #pragma warning disable CS0414
         private static List<List<int>> board;
         private List<List<int>> cells = new List<List<int>>();
+        public static List<List<int>> Board{
+            get{
+                lock(board){
+                    return board;
+                }
+            }
+            set{
+                lock(board){
+                    board = value;
+                }
+            }
+        }
         #endregion
 
         public Sudoku(int speed = 0, string difficulty = ""){
@@ -45,6 +57,11 @@ namespace sudoku_solver
             
             board = boardNumbers;
             return boardNumbers;
+        }
+
+        //Get the Sudoku Board from board.json
+        public List<List<int>> GetBoard(){
+            return ParseBoard();
         }
 
         //Get a Sudoku Board from public api
@@ -78,23 +95,6 @@ namespace sudoku_solver
             }
             board = boardNumbers;
             return boardNumbers;
-        }
-        
-        public static List<List<int>> Board{
-            get{
-                lock(board){
-                    return board;
-                }
-            }
-            set{
-                lock(board){
-                    board = value;
-                }
-            }
-        }
-
-        public List<List<int>> GetBoard(){
-            return ParseBoard();
         }
 
 
@@ -205,8 +205,8 @@ namespace sudoku_solver
             return rowCheck && columnCheck && boxCheck;
         }
         public bool BackTrackingAlgorithm(){
-            int row=0;
-            int col=0;
+            int row = 0;
+            int col = 0;
             List<int> unassigned = FindUnassigned(row, col);
             //if all cells are assigned then the sudoku is already solved
             if(unassigned[0] == 0)
